@@ -1,0 +1,14 @@
+{
+  "name": "snakegame",
+  "version": "1.0.0",
+  "description": "a traditional phone game on the website",
+  "main": "jquery.snake.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "jquery": "^3.2.1"
+  }
+}
