@@ -45,17 +45,6 @@
 			return arr[Math.floor(start + Math.random() * len)];
 		},
 		/**
-		 * 把多个数组合并成一个
-		 * @param {Array}
-		 */
-		mergeArray: function () {
-			var tempArr = [];
-			Array.prototype.forEach.call(arguments, function (elem) {
-				tempArr = tempArr.concat(elem);
-			});
-			return tempArr;
-		},
-		/**
 		 * 过滤数组元素
 		 * @param {Array} arrMap  被过滤的数组
 		 * @param {Array} arrFilter 数组集合参数
