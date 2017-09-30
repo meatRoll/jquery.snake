@@ -5,17 +5,16 @@
  */
 (function ($) {
 	// 贪食蛇对象
-	function Snake() {
-		this.body = [];
-	}
+	function Snake() {}
 
 	$.extend(Snake.prototype, {
 		// 使snake爬行
 		walk: function (speed) {
+			var _this = this;
 			this.stop();
 			this.clockId = setInterval(function () {
-				console.log(1)
-			}, speedToTime(speed));
+				console.log(_this.speedToTime(speed))
+			}, this.speedToTime(speed));
 		},
 		// 使snake停止
 		stop: function () {
@@ -32,19 +31,34 @@
 	});
 
 	// 食物对象
-	function Food() {
-
-	}
+	function Food() {}
 
 	$.extend(Food.prototype, {
-		getPosition: function () {
-
+		// 获取食物位置坐标
+		getRandomArrayElement: function () {
+			var start = 0,
+				len = this.map.length;
+				return arr[Math.floor(start + Math.random() * len)];
 		}
 	});
 
 	// 计算每个方块位置
 	function calculateSquare(squareLength) {
 
+	}
+
+	/**
+	 * 过滤数组元素
+	 * @param {Array} arrMap  被过滤的数组
+	 * @param {Array} arrFilter 数组集合参数
+	 */
+	function filtrateArray(arrMap, arrFilter) {
+		var tempArr = arrMap;
+		arrFilter.filter(function(elemOut){
+			return !tempArr.some(function(elemIn){
+				return elemOut === elemIn;
+			});
+		});
 	}
 
 	/**
@@ -82,18 +96,16 @@
 		// 提取snake的配置项
 		var snakeConfig = [];
 		options.snake.forEach(function (elem, index) {
+			snakeConfig[index] = {};
+			for (var key in elem) {
+				snakeConfig[index][key] = elem[key];
+			}
 			if (index === 0) {
-				snakeConfig[index] = {};
-				snakeConfig[index].color = elem.color || 'black';
-				snakeConfig[index].up = (elem.controls && elem.controls.up) || 38;
-				snakeConfig[index].down = (elem.controls && elem.controls.down) || 40;
-				snakeConfig[index].left = (elem.controls && elem.controls.left) || 37;
-				snakeConfig[index].right = (elem.controls && elem.controls.right) || 39;
-			} else {
-				for (var key in elem) {
-					snakeConfig[index] = {};
-					snakeConfig[index][key] = elem[key];
-				}
+				snakeConfig[index].color = snakeConfig[index].color || 'black';
+				snakeConfig[index].up = snakeConfig[index].up || 38;
+				snakeConfig[index].down = snakeConfig[index].down || 40;
+				snakeConfig[index].left = snakeConfig[index].left || 37;
+				snakeConfig[index].right = snakeConfig[index].right || 39;
 			}
 		});
 
@@ -103,19 +115,20 @@
 		// 提取food的配置项
 		var foodConfig = [];
 		options.food.forEach(function (elem, index) {
+			foodConfig[index] = {};
+			for (var key in elem) {
+				foodConfig[index][key] = elem[key];
+			}
 			if (index === 0) {
-				foodConfig[index] = {};
-				foodConfig[index].color = elem.color || 'red';
-			} else {
-				for (var key in elem) {
-					foodConfig[index] = {};
-					foodConfig[index][key] = elem[key];
-				}
+				foodConfig[index].color = foodConfig[index].color || 'red';
 			}
 		});
 
-		// 边框样式
-		$canvas.css('border', bdWidth + 'px ' + bdStyle + ' ' + bdColor);
+		// 边框样式和背景样式
+		$canvas.css({
+			'border': bdWidth + 'px ' + bdStyle + ' ' + bdColor,
+			'background': bgColor
+		});
 
 		// 计算row和column
 		var row = $canvas.width() / unit,
@@ -142,6 +155,31 @@
 				map.push(i + ' ' + j);
 			}
 		}
+
+		// 生成Snake对象
+		var snake = [],
+			tempSnake;
+		snakeConfig.forEach(function (elem, index) {
+			tempSnake = snake[index] = new Snake;
+			for (var key in elem) {
+				if (key === 'initialPostion') tempSnake.body = elem[key];
+				else tempSnake[key] = elem[key];
+			}
+		});
+		tempSnake = null;
+
+		// 生成Food对象
+		var food = [],
+			tempFood;
+		foodConfig.forEach(function (elem, index) {
+			tempFood = food[index] = new Food;
+			for (var key in elem) {
+				tempFood[key] = elem[key];
+			}
+		});
+		tempFood = null;
+		console.log(food)
+
 
 
 	}
