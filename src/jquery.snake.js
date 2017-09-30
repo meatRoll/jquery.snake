@@ -4,7 +4,7 @@
  * 仅支持IE9及以上
  */
 (function ($) {
-	// 贪食蛇对象
+	// Snake对象
 	function Snake() {}
 
 	$.extend(Snake.prototype, {
@@ -30,36 +30,71 @@
 		}
 	});
 
-	// 食物对象
-	function Food() {}
+	// Food对象
+	function Food(snake, food, map) {
+		this.snake = snake;
+		this.food = food;
+		this.map = map;
+	}
 
 	$.extend(Food.prototype, {
 		// 获取食物位置坐标
 		getRandomArrayElement: function () {
 			var start = 0,
-				len = this.map.length;
-				return arr[Math.floor(start + Math.random() * len)];
+				len = this.foodMap.length;
+			return arr[Math.floor(start + Math.random() * len)];
+		},
+		/**
+		 * 把多个数组合并成一个
+		 * @param {Array}
+		 */
+		mergeArray: function () {
+			var tempArr = [];
+			Array.prototype.forEach.call(arguments, function (elem) {
+				tempArr = tempArr.concat(elem);
+			});
+			return tempArr;
+		},
+		/**
+		 * 过滤数组元素
+		 * @param {Array} arrMap  被过滤的数组
+		 * @param {Array} arrFilter 数组集合参数
+		 */
+		filtrateArray: function (arrMap, arrFilter) {
+			var tempArr = arrMap;
+			tempArr = tempArr.filter(function (elemOut) {
+				return !arrFilter.some(function (elemIn) {
+					return elemOut === elemIn;
+				});
+			});
+			return tempArr;
+		},
+		// 得到food位置的可用数组
+		getMap: function () {
+			var filters = [];
+			this.snake.forEach(function(elem){
+				filters = filters.concat(elem.body);
+			});
+			this.food.forEach(function(elem) {
+				if(elem.position) filters.push(elem.position);	
+			});
+			this.foodMap = this.filtrateArray(this.map, filters);
 		}
 	});
 
-	// 计算每个方块位置
-	function calculateSquare(squareLength) {
-
+	// Drawer对象
+	function Drawer(unit) {
+		this.unit = unit;
 	}
 
-	/**
-	 * 过滤数组元素
-	 * @param {Array} arrMap  被过滤的数组
-	 * @param {Array} arrFilter 数组集合参数
-	 */
-	function filtrateArray(arrMap, arrFilter) {
-		var tempArr = arrMap;
-		arrFilter.filter(function(elemOut){
-			return !tempArr.some(function(elemIn){
-				return elemOut === elemIn;
-			});
-		});
-	}
+	$.extend(Drawer.prototype, {
+		/**
+		 * @param {Number} squareLength 单元大小
+		 */
+		calculateSquare: function (squareLength) {
+
+		}
+	});
 
 	/**
 	 * @method  snake
@@ -172,13 +207,13 @@
 		var food = [],
 			tempFood;
 		foodConfig.forEach(function (elem, index) {
-			tempFood = food[index] = new Food;
+			tempFood = food[index] = new Food(snake, food, map);
 			for (var key in elem) {
 				tempFood[key] = elem[key];
 			}
 		});
 		tempFood = null;
-		console.log(food)
+
 
 
 
