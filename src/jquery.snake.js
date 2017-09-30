@@ -42,7 +42,7 @@
 		getRandomArrayElement: function () {
 			var start = 0,
 				len = this.foodMap.length;
-			return arr[Math.floor(start + Math.random() * len)];
+			this.position = this.foodMap[Math.floor(start + Math.random() * len)];
 		},
 		/**
 		 * 过滤数组元素
@@ -61,11 +61,11 @@
 		// 得到food位置的可用数组
 		getMap: function () {
 			var filters = [];
-			this.snake.forEach(function(elem){
+			this.snake.forEach(function (elem) {
 				filters = filters.concat(elem.body);
 			});
-			this.food.forEach(function(elem) {
-				if(elem.position) filters.push(elem.position);	
+			this.food.forEach(function (elem) {
+				if (elem.position) filters.push(elem.position);
 			});
 			this.foodMap = this.filtrateArray(this.map, filters);
 		}
@@ -93,11 +93,7 @@
 		var $canvas = $(this);
 
 		// 检验是否支持canvas
-		if ($canvas.get(0).getContext) {
-			var ctx = $(this).get(0).getContext('2d');
-		} else {
-			throw new Error('不支持canvas');
-		}
+		if (!$canvas.get(0).getContext) throw new Error('不支持canvas');
 
 		// 检测是否传入参数
 		options = typeof options === 'object' ? options : {};
@@ -200,8 +196,11 @@
 			for (var key in elem) {
 				tempFood[key] = elem[key];
 			}
+			tempFood.getMap();
+			tempFood.getRandomArrayElement();
 		});
 		tempFood = null;
+		console.log(food)
 
 
 
