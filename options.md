@@ -10,7 +10,8 @@
 - 颜色（color）：black
 - 初始位置（initialPosition）（必填/require）: 
 	- 格式（pattern）： Array  ["行/row" + "空格/space" + "列/column"]  ["1 1"]
-	- 注意（warning）：位置必须相连（The location must be connected.）
+	- 注意（warning）：位置必须相连（The location must be connected.
+- 速度（speed）：同游戏速度（the same as the speed configuration above）
 - 操作按键选择（controls）：
   - 上（up）：38
   - 下（down）：40

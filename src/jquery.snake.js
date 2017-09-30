@@ -4,37 +4,71 @@
  * 仅支持IE9及以上
  */
 (function ($) {
-	// Snake对象
-	function Snake() {}
+	/**
+	 * Snake构造函数
+	 * @class Snake
+	 * @constructor Snake
+	 * @param {Object} options 配置选项
+	 */
+	function Snake(options) {
+		for (var key in options) {
+			if (key === 'initialPostion') this.body = options[key];
+			else this[key] = options[key];
+		}
+		this.setTime();
+	}
 
 	$.extend(Snake.prototype, {
-		// 使snake爬行
+		/**
+		 * 使snake爬行
+		 * @method walk
+		 * @param {Number} speed 游戏速度
+		 */
 		walk: function (speed) {
-			var _this = this;
 			this.stop();
 			this.clockId = setInterval(function () {
-				console.log(_this.speedToTime(speed))
-			}, this.speedToTime(speed));
+
+
+
+
+
+			}, this.time);
 		},
 		// 使snake停止
 		stop: function () {
 			clearInterval(this.clockId);
 		},
-		// speed转成时间
-		speedToTime: function (speed) {
-			return 50 * (10 - speed);
+		// speed转成time
+		setTime: function () {
+			this.time = 50 * (10 - this.speed);
 		},
-		// 设置初始位置 
+		/**
+		 * 给外部提供的api接口，用于设置Snake的位置
+		 * @param {Array} posArr 位置数据
+		 */
 		setInitialPosition: function (posArr) {
 			this.body = posArr;
 		}
 	});
 
-	// Food对象
-	function Food(snake, food, map) {
+	/**
+	 * Food构造函数
+	 * @class Food
+	 * @constructor Food
+	 * @param {Array} snake 对象的数组集合
+	 * @param {Array} food 对象的数组集合
+	 * @param {Array} map 点阵数组
+	 * @param {Object} options 配置选项
+	 */
+	function Food(snake, food, map, options) {
 		this.snake = snake;
 		this.food = food;
 		this.map = map;
+		for (var key in options) {
+			this[key] = options[key];
+		}
+		this.getMap();
+		this.getRandomArrayElement();
 	}
 
 	$.extend(Food.prototype, {
@@ -46,8 +80,10 @@
 		},
 		/**
 		 * 过滤数组元素
+		 * @method filtrateArray
 		 * @param {Array} arrMap  被过滤的数组
 		 * @param {Array} arrFilter 数组集合参数
+		 * @return {Array} 筛选过的数组
 		 */
 		filtrateArray: function (arrMap, arrFilter) {
 			var tempArr = arrMap;
@@ -71,16 +107,32 @@
 		}
 	});
 
-	// Drawer对象
+	/**
+	 * Drawer构造函数
+	 * @class Drawer
+	 * @constructor Drawer
+	 * @param {Number} unit 单元大小
+	 */
 	function Drawer(unit) {
 		this.unit = unit;
 	}
 
 	$.extend(Drawer.prototype, {
+		// Drawer初始化
+		initialize: function () {
+
+		},
 		/**
-		 * @param {Number} squareLength 单元大小
+		 * 将记载位置的字符串转化为可利用的数组
+		 * @method splitToArr
+		 * @param {String} posStr 记载位置的字符串
+		 * @return {Array} 记录着位置数据的数组
 		 */
-		calculateSquare: function (squareLength) {
+		splitToArr: function (posStr) {
+
+		},
+		// 计算每个单元实际位置
+		calculateSquare: function () {
 
 		}
 	});
@@ -127,6 +179,7 @@
 				snakeConfig[index].left = snakeConfig[index].left || 37;
 				snakeConfig[index].right = snakeConfig[index].right || 39;
 			}
+			snakeConfig[index].speed = snakeConfig[index].speed || speed;
 		});
 
 		// 检测使food的配置项至少为1
@@ -139,9 +192,7 @@
 			for (var key in elem) {
 				foodConfig[index][key] = elem[key];
 			}
-			if (index === 0) {
-				foodConfig[index].color = foodConfig[index].color || 'red';
-			}
+			foodConfig[index].color = foodConfig[index].color || 'red';
 		});
 
 		// 边框样式和背景样式
@@ -154,7 +205,7 @@
 		var row = $canvas.width() / unit,
 			column = $canvas.height() / unit;
 
-		// 给snake原型设定row和column
+		// 给Snake原型设定row和column
 		Object.defineProperties(Snake.prototype, {
 			row: {
 				get: function () {
@@ -177,30 +228,16 @@
 		}
 
 		// 生成Snake对象
-		var snake = [],
-			tempSnake;
+		var snake = [];
 		snakeConfig.forEach(function (elem, index) {
-			tempSnake = snake[index] = new Snake;
-			for (var key in elem) {
-				if (key === 'initialPostion') tempSnake.body = elem[key];
-				else tempSnake[key] = elem[key];
-			}
+			snake[index] = new Snake(elem);
 		});
-		tempSnake = null;
 
 		// 生成Food对象
-		var food = [],
-			tempFood;
+		var food = [];
 		foodConfig.forEach(function (elem, index) {
-			tempFood = food[index] = new Food(snake, food, map);
-			for (var key in elem) {
-				tempFood[key] = elem[key];
-			}
-			tempFood.getMap();
-			tempFood.getRandomArrayElement();
+			food[index] = new Food(snake, food, map, elem);
 		});
-		tempFood = null;
-		console.log(food)
 
 
 

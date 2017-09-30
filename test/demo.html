@@ -1,24 +1,29 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
 	<meta charset="UTF-8">
 	<title>Snake Game</title>
 	<script src="../node_modules/jquery/dist/jquery.js"></script>
 	<script src="../src/jquery.snake.js"></script>
 </head>
+
 <body>
 	<canvas id="snake" width="800" height="600"></canvas>
 	<script>
-		$(function(){
+		$(function () {
 			$('#snake').snake({
 				background: {
 					color: 'skyblue'
 				},
 				snake: [{
-					initialPostion: ['10 10', '9 10']
-				}]
+					initialPostion: ['10 10', '9 10'],
+					speed: 3
+				}],
+				food: [{}, {}]
 			});
 		});
 	</script>
 </body>
+
 </html>
