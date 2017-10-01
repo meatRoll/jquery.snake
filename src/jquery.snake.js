@@ -10,24 +10,23 @@
 	 * @constructor Snake
 	 * @param {Object} options 配置选项
 	 */
-	function Snake(options) {
+	function Snake(canvas, row, column, options) {
+		this.canvas = canvas;
+		this.row = row;
+		this.column = column;
 		for (var key in options) {
 			if (key === 'initialPostion') this.body = options[key];
 			else this[key] = options[key];
 		}
+		this.data = this.body.slice();
 		this.setTime();
 	}
 
 	$.extend(Snake.prototype, {
-		/**
-		 * 使snake爬行
-		 * @method walk
-		 * @param {Number} speed 游戏速度
-		 */
-		walk: function (speed) {
+		// 使snake爬行
+		walk: function () {
 			this.stop();
 			this.clockId = setInterval(function () {
-
 
 
 
@@ -46,9 +45,9 @@
 		 * 给外部提供的api接口，用于设置Snake的位置
 		 * @param {Array} posArr 位置数据
 		 */
-		setInitialPosition: function (posArr) {
-			this.body = posArr;
-		}
+		// setInitialPosition: function (posArr) {
+		// 	this.body = posArr;
+		// }
 	});
 
 	/**
@@ -76,7 +75,8 @@
 		getRandomArrayElement: function () {
 			var start = 0,
 				len = this.foodMap.length;
-			this.position = this.foodMap[Math.floor(start + Math.random() * len)];
+			this.data = [];
+			this.data.push(this.foodMap[Math.floor(start + Math.random() * len)]);
 		},
 		/**
 		 * 过滤数组元素
@@ -104,6 +104,13 @@
 				if (elem.position) filters.push(elem.position);
 			});
 			this.foodMap = this.filtrateArray(this.map, filters);
+		},
+		// 改变food位置
+		changePosition: function () {
+			if (!this.announcer) throw new Error('没有绑定对应Drawer对象');
+			this.getMap();
+			this.getRandomArrayElement();
+			this.announcer.announce(this);
 		}
 	});
 
@@ -113,27 +120,87 @@
 	 * @constructor Drawer
 	 * @param {Number} unit 单元大小
 	 */
-	function Drawer(unit) {
+	function Drawer(canvas, unit, snake, food) {
+		this.canvas = canvas;
 		this.unit = unit;
+		this.snake = snake;
+		this.food = food;
+		this.ctx = this.canvas.get(0).getContext('2d');
 	}
 
 	$.extend(Drawer.prototype, {
-		// Drawer初始化
+		// 初始化数据
 		initialize: function () {
-
+			this.clear();
+			this.snake.forEach(function (elem) {
+				this.get_data(elem);
+				this.draw(elem);
+				this.bind(elem);
+			}, this);
+			this.food.forEach(function (elem) {
+				this.get_data(elem);
+				this.draw(elem);
+				this.bind(elem);
+			}, this);
 		},
 		/**
-		 * 将记载位置的字符串转化为可利用的数组
-		 * @method splitToArr
-		 * @param {String} posStr 记载位置的字符串
-		 * @return {Array} 记录着位置数据的数组
+		 * 用于绑定相应对象，实现监听
+		 * @method bind
+		 * @param {Object} obj Snake/Food对象
 		 */
-		splitToArr: function (posStr) {
-
+		bind: function (obj) {
+			obj.announcer = this;
 		},
-		// 计算每个单元实际位置
-		calculateSquare: function () {
-
+		announce: function (obj) {
+			this.get_data(obj);
+			this.draw(obj);
+		},
+		/**
+		 * 得到_data数据
+		 * @method get_data
+		 * @param {Object} obj Snake/Food对象
+		 */
+		get_data: function (obj) {
+			obj._data = obj.data.map(function (elem) {
+				return this.calculateSquare(elem);
+			}, this);
+		},
+		/**
+		 * 计算每个单元实际位置
+		 * @method calculateSquare
+		 * @param {String} posStr 带有位置信息的数组
+		 * @return {Array}
+		 */
+		calculateSquare: function (posStr) {
+			var posArr = posStr.split(' ');
+			return [
+				(posArr[0] - 1) * this.unit,
+				(posArr[1] - 1) * this.unit
+			]
+		},
+		/**
+		 * 针对特定区域进行描绘
+		 * @method draw
+		 * @param {Object} obj Snake对象或是Food对象
+		 */
+		draw: function (obj) {
+			var ctx = this.ctx;
+			ctx.beginPath();
+			ctx.save();
+			if (obj.waste) {
+				obj.waste.forEach(function (elem) {
+					ctx.clearRect(elem[0], elem[1], this.unit, this.unit);
+				}, this);
+			}
+			ctx.fillStyle = obj.color;
+			obj._data.forEach(function (elem) {
+				ctx.fillRect(elem[0], elem[1], this.unit, this.unit);
+			}, this);
+			ctx.restore();
+		},
+		// 清空canvas
+		clear: function () {
+			this.ctx.clearRect(0, 0, this.canvas.width(), this.canvas.height());
 		}
 	});
 
@@ -206,18 +273,18 @@
 			column = $canvas.height() / unit;
 
 		// 给Snake原型设定row和column
-		Object.defineProperties(Snake.prototype, {
-			row: {
-				get: function () {
-					return row;
-				}
-			},
-			column: {
-				get: function () {
-					return column;
-				}
-			}
-		});
+		// Object.defineProperties(Snake.prototype, {
+		// 	row: {
+		// 		get: function () {
+		// 			return row;
+		// 		}
+		// 	},
+		// 	column: {
+		// 		get: function () {
+		// 			return column;
+		// 		}
+		// 	}
+		// });
 
 		// 生成点阵
 		var map = [];
@@ -230,7 +297,7 @@
 		// 生成Snake对象
 		var snake = [];
 		snakeConfig.forEach(function (elem, index) {
-			snake[index] = new Snake(elem);
+			snake[index] = new Snake($canvas, row, column, elem);
 		});
 
 		// 生成Food对象
@@ -239,8 +306,15 @@
 			food[index] = new Food(snake, food, map, elem);
 		});
 
+		// 生成Drawer对象
+		var drawer = new Drawer($canvas, unit, snake, food);
+		drawer.initialize();
+		// $canvas.get(0).onclick = function () {
+		// 	food[0].changePosition();
+		// 	console.log(food[0])
+		// }
+		console.log(drawer);
 
-
-
+		return $canvas;
 	}
 }(jQuery));
