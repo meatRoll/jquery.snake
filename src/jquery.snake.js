@@ -33,16 +33,16 @@
 			if (_this.isOnfocus || _this.canChangeDirection) {
 				var directionBefore = _this.direction;
 				switch (event.keyCode) {
-					case _this.up:
+					case _this.controls.up:
 						if (_this.direction !== '0 1') _this.direction = '0 -1';
 						break;
-					case _this.down:
+					case _this.controls.down:
 						if (_this.direction !== '0 -1') _this.direction = '0 1';
 						break;
-					case _this.left:
+					case _this.controls.left:
 						if (_this.direction !== '1 0') _this.direction = '-1 0';
 						break;
-					case _this.right:
+					case _this.controls.right:
 						if (_this.direction !== '-1 0') _this.direction = '1 0';
 						break;
 				}
@@ -346,10 +346,13 @@
 			}
 			if (index === 0) {
 				snakeConfig[index].color = snakeConfig[index].color || 'black';
-				snakeConfig[index].up = snakeConfig[index].up || 38;
-				snakeConfig[index].down = snakeConfig[index].down || 40;
-				snakeConfig[index].left = snakeConfig[index].left || 37;
-				snakeConfig[index].right = snakeConfig[index].right || 39;
+				if (!snakeConfig[index].controls) {
+					snakeConfig[index].controls = {};
+					snakeConfig[index].controls.up = 38;
+					snakeConfig[index].controls.down = 40;
+					snakeConfig[index].controls.left = 37;
+					snakeConfig[index].controls.right = 39;
+				}
 			}
 			snakeConfig[index].speed = snakeConfig[index].speed || speed;
 		});
@@ -398,24 +401,26 @@
 		});
 
 		// 渲染之前的生命钩子
-		var ctx = $canvas.get(0).getContext('2d');
-		if (options.common && options.common.beforeStarted) {
-			options.common.beforeStarted(ctx, getDrawer);
-		} else getDrawer();
+		var drawer, ctx = $canvas.get(0).getContext('2d');
+		if (options.common && options.common.beforeDrawn) options.common.beforeDrawn(ctx, getDrawer);
+		else getDrawer();
 
 		// 生成Drawer对象
 		function getDrawer() {
 			ctx.clearRect(0, 0, $canvas.width(), $canvas.height());
-			var drawer = new Drawer($canvas, unit, snake, food);
+			drawer = new Drawer($canvas, unit, snake, food);
 			drawer.initialize();
+			if (options.common && options.common.beforeStarted) options.common.beforeStarted(drawer, runSnake);
+			else runSnake();
+		}
+
+		// 游戏开始
+		function runSnake() {
 			snake.forEach(function (elem) {
 				elem.walk();
 			});
 		}
 
-
-
-
-		return $canvas;
+		return drawer;
 	}
 }(jQuery, window));
