@@ -10,6 +10,7 @@
 
 <body>
 	<canvas id="snake" width="600" height="600"></canvas>
+	<div style="width:12px;height:10000px;"></div>
 	<script>
 		$(function () {
 			$('#snake').snake({
@@ -18,7 +19,17 @@
 				},
 				snake: [{
 					initialPostion: ['10 10', '9 10'],
-					speed: 3
+					speed: 8
+				},{
+					initialPostion: ['30 30', '30 29'],
+					speed: 0,
+					color: 'hotpink',
+					controls:{
+						up: 55,
+						down: 56,
+						left: 57,
+						right: 58
+					}
 				}],
 				food: [{}, {}]
 			});

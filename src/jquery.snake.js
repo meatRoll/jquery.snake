@@ -14,7 +14,9 @@
 		this.canvas = canvas;
 		this.row = row;
 		this.column = column;
-		this.direction = 'right';
+		this.canChangeDirection = true;
+		this.direction = '1 0';
+		this.ate = 0;
 		for (var key in options) {
 			if (key === 'initialPostion') this.body = options[key];
 			else this[key] = options[key];
@@ -28,21 +30,24 @@
 			else _this.isOnfocus = false;
 		});
 		$(window).on('keydown', function (event) {
-			if (_this.isOnfocus) {
+			if (_this.isOnfocus || _this.canChangeDirection) {
+				var directionBefore = _this.direction;
 				switch (event.keyCode) {
 					case _this.up:
-						_this.direction = 'up';
+						if (_this.direction !== '0 1') _this.direction = '0 -1';
 						break;
 					case _this.down:
-						_this.direction = 'down';
+						if (_this.direction !== '0 -1') _this.direction = '0 1';
 						break;
 					case _this.left:
-						_this.direction = 'left';
+						if (_this.direction !== '1 0') _this.direction = '-1 0';
 						break;
 					case _this.right:
-						_this.direction = 'right';
+						if (_this.direction !== '-1 0') _this.direction = '1 0';
 						break;
 				}
+				if (directionBefore !== _this.direction) _this.canChangeDirection = false;
+				return false;
 			}
 		});
 	}
@@ -54,24 +59,16 @@
 			this.stop();
 			var _this = this;
 			this.clockId = setInterval(function () {
-				switch (_this.direction) {
-					case 'up':
-						_this.setChange('0 -1');
-						break;
-					case 'down':
-						_this.setChange('0 1');
-						break;
-					case 'left':
-						_this.setChange('-1 0');
-						break;
-					case 'right':
-						_this.setChange('1 0');
-						break;
-				}
-
-				_this.announcer.announce(_this);
+				_this.setChange(_this.direction);
+				_this.canChangeDirection = true;
+				_this.checkIsAlive();
 			}, this.time);
 		},
+		/**
+		 * 对传入不同的操作符进行不同操作
+		 * @method setChange
+		 * @param {String} operation 操作符
+		 */
 		setChange: function (operaion) {
 			var _operation = operaion.split(' '),
 				tempData = this.body[0].split(' ').map(function (elem, index) {
@@ -79,12 +76,42 @@
 				}, this).join(' ');
 			this.data = [];
 			this.data.push(tempData);
+			this._body = this.body.slice();
 			this.body.unshift(tempData);
 			this.waste = [];
 			this.waste.push(this.body.pop());
 		},
+		// 检查snake是否存活,如果死亡则停止移动
 		checkIsAlive: function () {
-
+			var _this = this;
+			setTimeout(function () {
+				var head = _this.body[0],
+					checkBody;
+				head.split(' ').forEach(function (elem, index) {
+					var pos = Number(elem),
+						key;
+					if (index === 0) key = _this.row;
+					else key = _this.column;
+					if (pos < 1 || pos > key) _this.die();
+				});
+				_this.announcer.snake.forEach(function (elem) {
+					if (elem === _this) checkBody = elem.body.slice(1);
+					else checkBody = elem.body;
+					if (checkBody.some(function (elem) {
+							return head === elem;
+						})) _this.die();
+				});
+				_this.announcer.announce(_this);
+			}, 5);
+		},
+		// 判定蛇死亡后的各种操作
+		die: function () {
+			if (this.beforeDied) this.beforeDied();
+			this.stop();
+			this.body = this._body;
+			this.data = [];
+			this.waste = [];
+			if (this.died) this.died();
 		},
 		// 使snake停止
 		stop: function () {
@@ -300,7 +327,22 @@
 		options.snake.forEach(function (elem, index) {
 			snakeConfig[index] = {};
 			for (var key in elem) {
-				snakeConfig[index][key] = elem[key];
+				if (key === 'initialDirection') {
+					switch (elem[key]) {
+						case 'up':
+							snakeConfig[index].direction = '0 -1';
+							break;
+						case 'down':
+							snakeConfig[index].direction = '0 1';
+							break;
+						case 'left':
+							snakeConfig[index].direction = '-1 0';
+							break;
+						case 'right':
+							snakeConfig[index].direction = '1 0';
+							break;
+					}
+				} else snakeConfig[index][key] = elem[key];
 			}
 			if (index === 0) {
 				snakeConfig[index].color = snakeConfig[index].color || 'black';
@@ -335,20 +377,6 @@
 		var row = $canvas.width() / unit,
 			column = $canvas.height() / unit;
 
-		// 给Snake原型设定row和column
-		// Object.defineProperties(Snake.prototype, {
-		// 	row: {
-		// 		get: function () {
-		// 			return row;
-		// 		}
-		// 	},
-		// 	column: {
-		// 		get: function () {
-		// 			return column;
-		// 		}
-		// 	}
-		// });
-
 		// 生成点阵
 		var map = [];
 		for (var i = 1; i <= row; i++) {
@@ -369,11 +397,24 @@
 			food[index] = new Food(snake, food, map, elem);
 		});
 
+		// 渲染之前的生命钩子
+		var ctx = $canvas.get(0).getContext('2d');
+		if (options.common && options.common.beforeStarted) {
+			options.common.beforeStarted(ctx, getDrawer);
+		} else getDrawer();
+
 		// 生成Drawer对象
-		var drawer = new Drawer($canvas, unit, snake, food);
-		drawer.initialize();
-		snake[0].walk();
-		console.log(drawer);
+		function getDrawer() {
+			ctx.clearRect(0, 0, $canvas.width(), $canvas.height());
+			var drawer = new Drawer($canvas, unit, snake, food);
+			drawer.initialize();
+			snake.forEach(function (elem) {
+				elem.walk();
+			});
+		}
+
+
+
 
 		return $canvas;
 	}

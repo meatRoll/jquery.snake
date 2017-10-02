@@ -6,11 +6,14 @@
 - 单位（unit）：10
 - 游戏速度（speed）：5
   - 范围（range）： 0 - 9
+> 以下为生命周期函数（life period callback function），后面为形参（formal parameter）
+- beforeStarted：ctx（描绘工具） next（调用以进行界面渲染）
+- started ：
 ## 贪食蛇（snake）（Array）
 - 颜色（color）：black
 - 初始位置（initialPosition）（必填/require）: 
-	- 格式（pattern）： Array  ["行/row" + "空格/space" + "列/column"]  ["1 1"]
-	- 注意（warning）：位置必须相连（The location must be connected.
+  - 格式（pattern）： Array  ["行/row" + "空格/space" + "列/column"]  ["1 1"]
+  - 注意（warning）：位置必须相连（The location must be connected.
 - 速度（speed）：同游戏速度（the same as the speed configuration above）
 - 初始方向（initialDirection）：left right(default) up down
 - 操作按键选择（controls）：
@@ -18,6 +21,9 @@
   - 下（down）：40
   - 左（left）：37
   - 右（right）：39
+> 以下为生命周期函数（life period callback function），后面为形参（formal parameter）
+- beforeDied：Drawer对象
+- died：Drawer对象
 ## 食物（food）（Array）
 - 颜色（color）：red
 ## 背景（background）
