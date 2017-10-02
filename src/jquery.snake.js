@@ -8,6 +8,9 @@
 	 * Snake构造函数
 	 * @class Snake
 	 * @constructor Snake
+	 * @param {Object} canvas jQuery对象
+	 * @param {Number} row 行数
+	 * @param {Number} column 列数s
 	 * @param {Object} options 配置选项
 	 */
 	function Snake(canvas, row, column, options) {
@@ -61,6 +64,7 @@
 			this.clockId = setInterval(function () {
 				_this.setChange(_this.direction);
 				_this.canChangeDirection = true;
+				_this.checkIsAte();
 				_this.checkIsAlive();
 			}, this.time);
 		},
@@ -81,6 +85,19 @@
 			this.waste = [];
 			this.waste.push(this.body.pop());
 		},
+		// 检查food是否被吃掉
+		checkIsAte: function () {
+			if (this.announcer.food.some(function (elem) {
+					if (this.body[0] === elem.data[0]) {
+						elem.changePosition();
+						return true;
+					}
+				}, this)) {
+				this.ate++;
+				this.waste = [];
+				this.body.push(this._body[this._body.length - 1]);
+			}
+		},
 		// 检查snake是否存活,如果死亡则停止移动
 		checkIsAlive: function () {
 			var _this = this;
@@ -94,11 +111,22 @@
 					else key = _this.column;
 					if (pos < 1 || pos > key) _this.die();
 				});
-				_this.announcer.snake.forEach(function (elem) {
-					if (elem === _this) checkBody = elem.body.slice(1);
-					else checkBody = elem.body;
-					if (checkBody.some(function (elem) {
-							return head === elem;
+				_this.announcer.snake.forEach(function (elemOut) {
+					if (elemOut === _this) checkBody = elemOut.body.slice(1);
+					else checkBody = elemOut.body;
+					if (checkBody.some(function (elemIn, index) {
+							if (head === elemIn) {
+								if (index === 0 && _this.direction.split(' ').some(function (elem1) {
+										return elemOut.direction.split(' ').some(function (elem2) {
+											if (elem1 === '0') return false;
+											return Number(elem1) === -Number(elem2);
+										});
+									})) {
+									elemOut._body = elemOut.body;
+									elemOut.die();
+								};
+								return true
+							}
 						})) _this.die();
 				});
 				_this.announcer.announce(_this);
@@ -106,12 +134,12 @@
 		},
 		// 判定蛇死亡后的各种操作
 		die: function () {
-			if (this.beforeDied) this.beforeDied();
 			this.stop();
-			this.body = this._body;
+			this.body = [];
 			this.data = [];
-			this.waste = [];
-			if (this.died) this.died();
+			this.waste = this._body;
+			if (this.died) this.died(this.announcer);
+			this.announcer.announce(this);
 		},
 		// 使snake停止
 		stop: function () {
@@ -120,14 +148,7 @@
 		// speed转成time
 		setTime: function () {
 			this.time = 50 * (10 - this.speed);
-		},
-		/**
-		 * 给外部提供的api接口，用于设置Snake的位置
-		 * @param {Array} posArr 位置数据
-		 */
-		// setInitialPosition: function (posArr) {
-		// 	this.body = posArr;
-		// }
+		}
 	});
 
 	/**
@@ -189,6 +210,10 @@
 		changePosition: function () {
 			if (!this.announcer) throw new Error('没有绑定对应Drawer对象');
 			this.getMap();
+			if (this.foodMap.length === 0) {
+				this.data = [];
+				return;
+			}
 			this.getRandomArrayElement();
 			this.announcer.announce(this);
 		}
@@ -198,13 +223,18 @@
 	 * Drawer构造函数
 	 * @class Drawer
 	 * @constructor Drawer
+	 * @param {Object} canvas jQuery对象
 	 * @param {Number} unit 单元大小
+	 * @param {Array} snake Snake对象数组
+	 * @param {Array} food Food对象数组
 	 */
-	function Drawer(canvas, unit, snake, food) {
+	function Drawer(canvas, unit, snake, food, option) {
 		this.canvas = canvas;
 		this.unit = unit;
 		this.snake = snake;
 		this.food = food;
+		this.deadSnake = 0;
+		this.ganmeover = option;
 		this.ctx = this.canvas.get(0).getContext('2d');
 	}
 
@@ -239,6 +269,11 @@
 		announce: function (obj) {
 			this.get_data(obj);
 			this.draw(obj);
+		},
+		// 计算snake死亡数
+		calcultateDeath: function(){
+			this.deadSnake++;
+			if(this.deadSnake === this.snake.length || this.ganmeover) this.ganmeover();
 		},
 		/**
 		 * 得到_data数据
@@ -297,6 +332,7 @@
 	/**
 	 * @method  snake
 	 * @param {Object} options 参数配置选项
+	 * @return {Object} jQuery对象
 	 */
 	$.fn.snake = function (options) {
 		var $canvas = $(this);
@@ -408,7 +444,7 @@
 		// 生成Drawer对象
 		function getDrawer() {
 			ctx.clearRect(0, 0, $canvas.width(), $canvas.height());
-			drawer = new Drawer($canvas, unit, snake, food);
+			drawer = new Drawer($canvas, unit, snake, food, options.Drawer && options.Drawer.ganmeovered);
 			drawer.initialize();
 			if (options.common && options.common.beforeStarted) options.common.beforeStarted(drawer, runSnake);
 			else runSnake();
@@ -421,6 +457,6 @@
 			});
 		}
 
-		return drawer;
+		return this;
 	}
 }(jQuery, window));

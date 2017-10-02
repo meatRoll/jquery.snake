@@ -22,10 +22,12 @@
   - 左（left）：37
   - 右（right）：39
 > 以下为生命周期函数（life period callback function），后面为形参（formal parameter）
-- beforeDied：Drawer对象
 - died：Drawer对象
 ## 食物（food）（Array）
 - 颜色（color）：red
+## 绘画板（Drawer）（Object）
+> 以下为生命周期函数（life period callback function），后面为形参（formal parameter）
+- gameovered: 
 ## 背景（background）
 - 颜色（color）：white
 ## 边框（border）
