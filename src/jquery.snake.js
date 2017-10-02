@@ -3,7 +3,7 @@
  * 使用本插件前请务必引入jquery
  * 仅支持IE9及以上
  */
-(function ($) {
+(function ($, window) {
 	/**
 	 * Snake构造函数
 	 * @class Snake
@@ -14,24 +14,77 @@
 		this.canvas = canvas;
 		this.row = row;
 		this.column = column;
+		this.direction = 'right';
 		for (var key in options) {
 			if (key === 'initialPostion') this.body = options[key];
 			else this[key] = options[key];
 		}
 		this.data = this.body.slice();
 		this.setTime();
+		// canvas事件处理
+		var _this = this;
+		$(window).on('click', function (event) {
+			if (event.target === _this.canvas.get(0)) _this.isOnfocus = true;
+			else _this.isOnfocus = false;
+		});
+		$(window).on('keydown', function (event) {
+			if (_this.isOnfocus) {
+				switch (event.keyCode) {
+					case _this.up:
+						_this.direction = 'up';
+						break;
+					case _this.down:
+						_this.direction = 'down';
+						break;
+					case _this.left:
+						_this.direction = 'left';
+						break;
+					case _this.right:
+						_this.direction = 'right';
+						break;
+				}
+			}
+		});
 	}
 
 	$.extend(Snake.prototype, {
 		// 使snake爬行
 		walk: function () {
+			if (!this.announcer) throw new Error('没有绑定对应Drawer对象');
 			this.stop();
+			var _this = this;
 			this.clockId = setInterval(function () {
+				switch (_this.direction) {
+					case 'up':
+						_this.setChange('0 -1');
+						break;
+					case 'down':
+						_this.setChange('0 1');
+						break;
+					case 'left':
+						_this.setChange('-1 0');
+						break;
+					case 'right':
+						_this.setChange('1 0');
+						break;
+				}
 
-
-
-
+				_this.announcer.announce(_this);
 			}, this.time);
+		},
+		setChange: function (operaion) {
+			var _operation = operaion.split(' '),
+				tempData = this.body[0].split(' ').map(function (elem, index) {
+					return Number(elem) + Number(_operation[index]);
+				}, this).join(' ');
+			this.data = [];
+			this.data.push(tempData);
+			this.body.unshift(tempData);
+			this.waste = [];
+			this.waste.push(this.body.pop());
+		},
+		checkIsAlive: function () {
+
 		},
 		// 使snake停止
 		stop: function () {
@@ -151,6 +204,11 @@
 		bind: function (obj) {
 			obj.announcer = this;
 		},
+		/**
+		 * 用于通知Drawer对象重新计算描绘
+		 * @method announce
+		 * @param {Object} obj Snake/Food对象
+		 */
 		announce: function (obj) {
 			this.get_data(obj);
 			this.draw(obj);
@@ -164,6 +222,11 @@
 			obj._data = obj.data.map(function (elem) {
 				return this.calculateSquare(elem);
 			}, this);
+			if (obj.waste) {
+				obj._waste = obj.waste.map(function (elem) {
+					return this.calculateSquare(elem);
+				}, this);
+			}
 		},
 		/**
 		 * 计算每个单元实际位置
@@ -187,8 +250,8 @@
 			var ctx = this.ctx;
 			ctx.beginPath();
 			ctx.save();
-			if (obj.waste) {
-				obj.waste.forEach(function (elem) {
+			if (obj._waste) {
+				obj._waste.forEach(function (elem) {
 					ctx.clearRect(elem[0], elem[1], this.unit, this.unit);
 				}, this);
 			}
@@ -309,12 +372,9 @@
 		// 生成Drawer对象
 		var drawer = new Drawer($canvas, unit, snake, food);
 		drawer.initialize();
-		// $canvas.get(0).onclick = function () {
-		// 	food[0].changePosition();
-		// 	console.log(food[0])
-		// }
+		snake[0].walk();
 		console.log(drawer);
 
 		return $canvas;
 	}
-}(jQuery));
+}(jQuery, window));

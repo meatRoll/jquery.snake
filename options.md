@@ -12,6 +12,7 @@
 	- 格式（pattern）： Array  ["行/row" + "空格/space" + "列/column"]  ["1 1"]
 	- 注意（warning）：位置必须相连（The location must be connected.
 - 速度（speed）：同游戏速度（the same as the speed configuration above）
+- 初始方向（initialDirection）：left right(default) up down
 - 操作按键选择（controls）：
   - 上（up）：38
   - 下（down）：40
