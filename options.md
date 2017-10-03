@@ -9,6 +9,7 @@
 > 以下为生命周期函数（life period callback function），后面为形参（formal parameter）
 - beforeDrawn：ctx（描绘工具） next（调用以进行界面渲染）
 - beforeStarted ：drawer（绘图对象）next（调用以进行游戏）
+- gameovered: drawer（绘图对象）
 ## 贪食蛇（snake）（Array）
 - 颜色（color）：black
 - 初始位置（initialPosition）（必填/require）: 
@@ -25,9 +26,6 @@
 - died：Drawer对象
 ## 食物（food）（Array）
 - 颜色（color）：red
-## 绘画板（Drawer）（Object）
-> 以下为生命周期函数（life period callback function），后面为形参（formal parameter）
-- gameovered: 
 ## 背景（background）
 - 颜色（color）：white
 ## 边框（border）

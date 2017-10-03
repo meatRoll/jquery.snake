@@ -273,7 +273,7 @@
 		// 计算snake死亡数
 		calcultateDeath: function(){
 			this.deadSnake++;
-			if(this.deadSnake === this.snake.length || this.ganmeover) this.ganmeover();
+			if(this.deadSnake === this.snake.length || this.ganmeover) this.ganmeover(this.drawer);
 		},
 		/**
 		 * 得到_data数据
@@ -443,8 +443,8 @@
 
 		// 生成Drawer对象
 		function getDrawer() {
-			ctx.clearRect(0, 0, $canvas.width(), $canvas.height());
-			drawer = new Drawer($canvas, unit, snake, food, options.Drawer && options.Drawer.ganmeovered);
+			drawer = new Drawer($canvas, unit, snake, food, options.common && options.common.ganmeovered);
+			drawer.clear();
 			drawer.initialize();
 			if (options.common && options.common.beforeStarted) options.common.beforeStarted(drawer, runSnake);
 			else runSnake();
