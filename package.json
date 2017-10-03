@@ -4,11 +4,18 @@
   "description": "a traditional phone game on the website",
   "main": "jquery.snake.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "gulp --color"
   },
   "author": "meatroll",
   "license": "MIT",
   "dependencies": {
     "jquery": "^3.2.1"
+  },
+  "devDependencies": {
+    "del": "^3.0.0",
+    "gulp": "^3.9.1",
+    "gulp-rename": "^1.2.2",
+    "gulp-uglify": "^3.0.0"
   }
 }
