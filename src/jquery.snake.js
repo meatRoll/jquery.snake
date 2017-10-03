@@ -33,7 +33,7 @@
 			else _this.isOnfocus = false;
 		});
 		$(window).on('keydown', function (event) {
-			if (_this.isOnfocus || _this.canChangeDirection) {
+			if (_this.isOnfocus && _this.canChangeDirection) {
 				var directionBefore = _this.direction;
 				switch (event.keyCode) {
 					case _this.controls.up:
